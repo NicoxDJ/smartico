@@ -38,7 +38,7 @@ jobs:
 
       # Setup .env & app key
       - name: Copy .env
-        run: cp .env.example .env
+        run: cp .env.testing .env
 
       - name: Generate key
         run: php artisan key:generate
