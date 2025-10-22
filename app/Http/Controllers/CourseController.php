@@ -76,7 +76,6 @@ class CourseController extends Controller
 		}
 		
 		$course->load('students');
-
 		return response()->json(['status'=>'success', 'data' => $course]);
 	}
 }
