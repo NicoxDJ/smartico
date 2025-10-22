@@ -1,0 +1,65 @@
+name: Laravel Tests
+
+on:
+  push:
+	branches: [ main, master, develop ]
+  pull_request:
+	branches: [ main, master, develop ]
+
+jobs:
+  test:
+	runs-on: ubuntu-latest
+
+	steps:
+	  # Get The Project
+	  - name: Checkout code
+		uses: actions/checkout@v4
+
+	  # Install PHP + all extensions
+	  - name: Setup PHP
+		uses: shivammathur/setup-php@v2
+		with:
+		  php-version: 8.2
+		  extensions: mbstring, bcmath, pdo_sqlite
+		  coverage: none
+
+	  # Cache Composer dependencies (Faster builds)
+	  - name: Cache Composer dependencies
+		uses: actions/cache@v4
+		with:
+		  path: vendor
+		  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+		  restore-keys: |
+			${{ runner.os }}-composer-
+
+	  # Install Dependencies
+	  - name: Install dependencies
+		run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+	  # Setup .env & app key
+	  - name: Copy .env
+		run: cp .env.example .env
+
+	  - name: Generate key
+		run: php artisan key:generate
+
+	  # Clean & Cache configurations
+	  - name: Optimize app
+		run: |
+		  php artisan config:clear
+		  php artisan cache:clear
+		  php artisan config:cache
+
+	  # Start Migrations in-memory db
+	  - name: Run migrations
+		run: php artisan migrate --env=testing
+		env:
+		  DB_CONNECTION: sqlite
+		  DB_DATABASE: ':memory:'
+
+	  # Start tests
+	  - name: Run PHPUnit tests
+		run: php artisan test --stop-on-failure
+		env:
+		  DB_CONNECTION: sqlite
+		  DB_DATABASE: ':memory:'
