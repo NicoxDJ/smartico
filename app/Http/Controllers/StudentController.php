@@ -24,11 +24,19 @@ class StudentController extends Controller
 		
 	}
 	
-	public function show(Student $student)
+	public function show($student_id)
 	{
+		$student = Student::find($student_id);
+		if (!$student) {
+			return response()->json([
+				'status' => 'error',
+				'message' => 'Student not found',
+			], 404);
+		}
+		
 		$student->load('courses');
 	
-		return response()->json($student);
+		return response()->json(['status'=>'success', 'data' => $student]);
 	}
 }
 

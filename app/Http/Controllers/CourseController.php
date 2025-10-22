@@ -62,14 +62,22 @@ class CourseController extends Controller
 				'course' => $course->title,
 				'student' => $student->name,
 			],
-		]);
+		], 201);
 	}
 
-	public function show(Course $course)
+	public function show($course_id)
 	{
+		$course = Course::find($course_id);
+		if (!$course) {
+			return response()->json([
+				'status' => 'error',
+				'message' => 'Course not found',
+			], 404);
+		}
+		
 		$course->load('students');
 
-		return response()->json($course);
+		return response()->json(['status'=>'success', 'data' => $course]);
 	}
 }
 
